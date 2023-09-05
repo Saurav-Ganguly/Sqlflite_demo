@@ -1,6 +1,6 @@
-# sqllite_demo
+# TODO List App
 
-A new Flutter project.
+A todolist app using sqlflite for data persistance in flutter
 
 ## Getting Started
 
