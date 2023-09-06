@@ -15,11 +15,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   final _categoryNameController = TextEditingController();
   final _descriptionController = TextEditingController();
 
+  final _editCategoryNameController = TextEditingController();
+  final _editDescriptionController = TextEditingController();
+
   final List<Category> _categoryList = [];
 
   getAllCategories() async {
     var categories = await _categoryService.readCategories();
-
+    _categoryList.clear();
     for (final category in categories) {
       Category newCategory = Category(
         id: category['id'],
@@ -30,6 +33,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         _categoryList.add(newCategory);
       });
     }
+  }
+
+  _editCategory(BuildContext context, categoryId) async {
+    final category = await _categoryService.readCategoryById(categoryId);
+    _editCategoryNameController.text = category[0]['name'] ?? 'No Name';
+    _editDescriptionController.text = category[0]['description'] ?? '';
+    _editFormDialog(context, categoryId);
   }
 
   _showFormDialog(BuildContext context) {
@@ -84,13 +94,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     final newCategory =
                         Category(name: category, description: description);
 
-                    final categoryService = CategoryService();
-                    categoryService.saveCategory(newCategory);
-
                     final result =
                         await _categoryService.saveCategory(newCategory);
 
                     Navigator.pop(context);
+                    getAllCategories();
+                    _categoryNameController.text = '';
+                    _descriptionController.text = '';
+                    const snackBar = SnackBar(
+                      content: Text('New category added successfully'),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   } else {
                     const snackBar = SnackBar(
                       content: Text('Please enter the data'),
@@ -103,6 +117,129 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             ],
           );
         });
+  }
+
+  _editFormDialog(BuildContext context, id) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit categories Form'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: _editCategoryNameController,
+                  decoration: const InputDecoration(
+                    hintText: 'title',
+                    labelText: 'Category',
+                  ),
+                ),
+                TextField(
+                  controller: _editDescriptionController,
+                  decoration: const InputDecoration(
+                    hintText: 'enter a description',
+                    labelText: 'Description',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all(
+                  Colors.red,
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all(
+                  Colors.blue,
+                ),
+              ),
+              onPressed: () async {
+                final category = _editCategoryNameController.text;
+                final description = _editDescriptionController.text;
+
+                if (category.isNotEmpty && description.isNotEmpty) {
+                  final newCategory = Category(
+                      id: id, name: category, description: description);
+
+                  final categoryService = CategoryService();
+                  categoryService.updateCategory(newCategory);
+
+                  //final result =
+                  //  await _categoryService.updateCategory(newCategory);
+                  Navigator.pop(context);
+                  getAllCategories();
+                  const snackBar = SnackBar(
+                    content: Text('Data edited successfully'),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                } else {
+                  const snackBar = SnackBar(
+                    content: Text('Please enter the data'),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                }
+              },
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _deleteFormDialog(BuildContext context, id) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Are you sure you want to delete?'),
+          actions: [
+            TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all(
+                  Colors.green,
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all(
+                  Colors.red,
+                ),
+              ),
+              onPressed: () async {
+                final categoryService = CategoryService();
+                categoryService.deleteCategory(id);
+                Navigator.of(context).pop();
+
+                getAllCategories();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Item Deleted'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: const Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -152,7 +289,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     child: ListTile(
                       leading: IconButton(
                         icon: const Icon(Icons.edit),
-                        onPressed: () {},
+                        onPressed: () {
+                          _editCategory(context, categoryItem.id);
+                        },
                       ),
                       title: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -163,7 +302,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                               Icons.delete,
                               color: Colors.red,
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              _deleteFormDialog(context, categoryItem.id);
+                            },
                           )
                         ],
                       ),
