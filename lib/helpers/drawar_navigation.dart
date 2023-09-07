@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sqllite_demo/categories_screen.dart';
 import 'package:sqllite_demo/home_screen.dart';
+import 'package:sqllite_demo/services/category_service.dart';
+import 'package:sqllite_demo/todo_by_category.dart';
 
 class DrawerNavigation extends StatefulWidget {
   const DrawerNavigation({super.key});
@@ -10,6 +12,38 @@ class DrawerNavigation extends StatefulWidget {
 }
 
 class _DrawerNavigationState extends State<DrawerNavigation> {
+  List<Widget> _categories = [];
+
+  getAllCategories() async {
+    final categoryService = CategoryService();
+    final categories = await categoryService.readCategories();
+    categories.forEach((category) {
+      setState(() {
+        _categories.add(InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => TodoByCategory(
+                  categoryValue: category['name'],
+                ),
+              ),
+            );
+          },
+          child: ListTile(
+            //leading: const Icon(Icons.category),
+            title: Text(category['name']),
+          ),
+        ));
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getAllCategories();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -49,6 +83,10 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
                   ),
                 );
               },
+            ),
+            const Divider(),
+            Column(
+              children: _categories,
             ),
           ],
         ),

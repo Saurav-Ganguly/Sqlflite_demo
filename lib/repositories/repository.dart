@@ -16,7 +16,7 @@ class Repository {
     return _database ?? await _databaseConnection.setDatabase();
   }
 
-  inserData(table, data) async {
+  insertData(table, data) async {
     var connection = await database;
     return await connection.insert(table, data);
   }
@@ -31,14 +31,20 @@ class Repository {
     return await connection.query(table, where: 'id=?', whereArgs: [id]);
   }
 
-  updateCategory(table, data) async {
+  updateData(table, data) async {
     var connection = await database;
     return await connection
         .update(table, data, where: 'id=?', whereArgs: [data['id']]);
   }
 
-  deleteCategory(table, id) async {
+  deleteData(table, id) async {
     var connection = await database;
     return await connection.rawDelete('DELETE FROM $table WHERE id = $id');
+  }
+
+  readDataByColumn(table, columnName, value) async {
+    var connection = await database;
+    return await connection
+        .query(table, where: '$columnName=?', whereArgs: [value]);
   }
 }
