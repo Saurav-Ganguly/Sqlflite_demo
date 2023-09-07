@@ -21,16 +21,8 @@ class TodoService {
         'todos', 'category', categoryValue);
   }
 
-  // readCategoryById(int categoryId) async {
-  //   return await _repository.readDataById('categories', categoryId);
-  // }
-
-  // updateCategory(Category category) async {
-  //   return await _repository.updateCategory(
-  //       'categories', category.categoryMap());
-  // }
-
-  // deleteCategory(int id) async {
-  //   return await _repository.deleteCategory('categories', id);
-  // }
+  checkTodo(id, value) async {
+    return await _repository.updateDataOfColumnById(
+        'todos', 'isFinished', value, id);
+  }
 }

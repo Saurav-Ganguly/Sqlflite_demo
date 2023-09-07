@@ -24,6 +24,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  _checkTodo(id, value) async {
+    final todoService = TodoService();
+    final result = todoService.checkTodo(id, value);
+    _getAllTodos();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -56,8 +62,14 @@ class _HomeScreenState extends State<HomeScreen> {
               elevation: 5,
               child: ListTile(
                 leading: Checkbox(
-                  value: todo['isFinished'] == '0' ? true : false,
-                  onChanged: (bool? value) {},
+                  value: todo['isFinished'] == 1 ? true : false,
+                  onChanged: (bool? value) {
+                    if (value == true) {
+                      _checkTodo(todo['id'], 1);
+                    } else {
+                      _checkTodo(todo['id'], 0);
+                    }
+                  },
                 ),
                 title: Text(todo['title']),
                 subtitle: Text("Category: ${todo['category']}"),

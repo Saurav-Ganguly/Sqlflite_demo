@@ -53,7 +53,7 @@ class _TodoByCategoryState extends State<TodoByCategory> {
                     child: ListTile(
                       title: Text(todo['title']),
                       leading: Checkbox(
-                        value: todo['isFinished'] == '0' ? true : false,
+                        value: todo['isFinished'] == 1 ? true : false,
                         onChanged: (bool? val) {},
                       ),
                       trailing: Text(todo['todoDate']),

@@ -47,4 +47,10 @@ class Repository {
     return await connection
         .query(table, where: '$columnName=?', whereArgs: [value]);
   }
+
+  updateDataOfColumnById(table, columnName, value, id) async {
+    var connection = await database;
+    return await connection.update(table, {columnName: value},
+        where: 'id=?', whereArgs: [id]);
+  }
 }
