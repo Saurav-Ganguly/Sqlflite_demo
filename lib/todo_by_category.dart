@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sqllite_demo/home_screen.dart';
 import 'package:sqllite_demo/services/todo_service.dart';
 
 class TodoByCategory extends StatefulWidget {
@@ -13,6 +14,7 @@ class _TodoByCategoryState extends State<TodoByCategory> {
   final _todos = [];
 
   _getTodosByCategory(String categoryValue) async {
+    _todos.clear();
     final todoService = TodoService();
     final todos = await todoService.readTodoByCategory(categoryValue);
     //print(todos);
@@ -27,6 +29,12 @@ class _TodoByCategoryState extends State<TodoByCategory> {
     );
   }
 
+  _checkTodo(id, value) async {
+    final todoService = TodoService();
+    final result = todoService.checkTodo(id, value);
+    _getTodosByCategory(widget.categoryValue);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +46,13 @@ class _TodoByCategoryState extends State<TodoByCategory> {
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.categoryValue),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back,
+            ),
+            onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const HomeScreen())),
+          ),
         ),
         body: Column(
           children: [
@@ -54,7 +69,13 @@ class _TodoByCategoryState extends State<TodoByCategory> {
                       title: Text(todo['title']),
                       leading: Checkbox(
                         value: todo['isFinished'] == 1 ? true : false,
-                        onChanged: (bool? val) {},
+                        onChanged: (bool? value) {
+                          if (value == true) {
+                            _checkTodo(todo['id'], 1);
+                          } else {
+                            _checkTodo(todo['id'], 0);
+                          }
+                        },
                       ),
                       trailing: Text(todo['todoDate']),
                     ),
